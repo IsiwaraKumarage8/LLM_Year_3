@@ -1,3 +1,9 @@
+.idea/
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+sentiment_labelled_sentences/
+*.zip
 
 nlp_rag/rag_env/
 nlp_rag/chroma_db/
