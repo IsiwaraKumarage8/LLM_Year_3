@@ -3,3 +3,9 @@ nlp_rag/rag_env/
 nlp_rag/chroma_db/
 
 nlp_rag/student_memory.db
+
+.idea/
+*.zip
+sentiment_labelled_sentences/
+__pycache__/
+.venv/
