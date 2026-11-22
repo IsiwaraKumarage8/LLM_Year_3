@@ -1,38 +1,71 @@
-# Laboratory Session 01: Sentiment Analysis Using Traditional Machine Learning
+# Lab 01: Sentiment Analysis Using Traditional Machine Learning
 
-## Objective
-Practice basic Natural Language Processing (NLP) preprocessing, Bag-of-Words (BoW) feature extraction, and supervised machine learning classification to predict sentiment from customer reviews.
+**Module:** PUSL 3205 – Large Language Models and Generative AI
 
-## Tasks and Implementation
-1. **Dataset Loading:** Downloaded the UCI Sentiment Labeled Sentences dataset and loaded `yelp_labelled.txt` (1,000 customer reviews) into a Pandas DataFrame.
-2. **Text Preprocessing:** Converted all reviews to lowercase, removed punctuation and non-alphabetic characters using regular expressions, cleaned up extra spaces, and stored the output in a `clean_review` column.
-3. **Data Exploration:** Checked the label split (500 positive, 500 negative), printed sample reviews from each class, and examined the most common words after removing stopwords.
-4. **Train/Test Split:** Divided the dataset into 80% training (800 reviews) and 20% testing (200 reviews) using a stratified split (`random_state=42`).
-5. **Feature Extraction:** Converted the cleaned text into a Bag-of-Words matrix (`(800, 1783)`) using `CountVectorizer(max_features=2500)`.
-6. **Model Training:** Trained a `LogisticRegression` classifier (`random_state=42`) on the training vectors.
-7. **Evaluation:** Tested the classifier on the held-out test set and calculated Accuracy, Precision, Recall, and F1-Score.
-8. **Custom Sentence Testing:** Wrote a `predict_sentiment` helper function to clean, vectorize, and classify unseen review sentences.
+A text-classification pipeline that predicts whether a sentence is **positive** or **negative**, using text preprocessing, Bag of Words / TF-IDF features and classic machine learning models.
 
-## Results and Evidence
-- **Notebook:** [`notebook/sentiment_analysis.ipynb`](notebook/sentiment_analysis.ipynb)
-- **Test Set Results (`LogisticRegression` + BoW):**
-  - **Accuracy:** 85.00% (`0.8500`)
-  - **Precision:** `0.8365`
-  - **Recall:** `0.8700`
-  - **F1-Score:** `0.8529`
-- **Sample Predictions on Unseen Reviews:**
-  - `"The food was absolutely wonderful and the service was top notch!"` → **Positive**
-  - `"Terrible experience, I will never come back here again."` → **Negative**
-- **Screenshots:**
-  - ![Evaluation Metrics](screenshots/evaluation_metrics.png)
-  - ![Word Frequency Exploration](screenshots/word_frequency.png)
+## Dataset
 
-## Observations
-- Lowercasing text and removing punctuation combined duplicate variations of the same word (such as `"Great"` and `"great"`), keeping the vocabulary smaller and cleaner without losing the meaning of the review.
-- Removing common English stopwords was important during exploration; before filtering them out, words like `"the"`, `"and"`, and `"was"` topped the frequency list instead of useful sentiment words like `"great"`, `"good"`, and `"nasty"`.
-- Although Logistic Regression with Bag-of-Words reached 85.00% accuracy on the test set, a single-word BoW model ignores word order, so it cannot capture phrase-level context or negation (like `"not good"`) as effectively as n-grams or modern language models.
+[UCI Sentiment Labelled Sentences](https://archive.ics.uci.edu/dataset/331/sentiment%2Blabelled%2Bsentences): Amazon, IMDb and Yelp reviews, labelled `1` (positive) or `0` (negative).
 
-## Learning Outcomes
-- Built a repeatable Python text-cleaning workflow using Pandas and regular expressions.
-- Turned raw text reviews into numerical feature vectors with Scikit-learn's `CountVectorizer`.
-- Trained and evaluated a baseline sentiment classifier using Accuracy, Precision, Recall, and F1-Score.
+| Item | Value |
+|---|---|
+| Sentences loaded | 3000 (1000 per source) |
+| After removing duplicates | 2983 |
+| Train / test split | 2386 / 597 (80/20, stratified) |
+| Class balance | ~50% positive, ~50% negative |
+| Vocabulary size (BOW) | 1647 words |
+
+## Pipeline
+
+1. **Load** the three files (`quoting=csv.QUOTE_NONE` so IMDb quotes don't merge rows)
+2. **Preprocess**: lowercase, expand `n't` to `not`, remove punctuation and extra whitespace
+3. **Explore**: examples, frequent words, log-odds of distinctive words, review length
+4. **Split** into train and test sets
+5. **Vectorise** with Bag of Words (stop words removed, negations kept)
+6. **Train** Logistic Regression, Linear SVM and Naive Bayes
+7. **Evaluate** with accuracy, precision, recall, F1, confusion matrices, 5-fold cross-validation
+8. **Extension**: TF-IDF + bigrams + hyperparameter tuning with `GridSearchCV`
+9. **Predict** on new sentences
+
+## Results (test set, 597 sentences)
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Logistic Regression | 0.8090 | 0.8239 | 0.7852 | 0.8041 |
+| Linear SVM | 0.7923 | 0.8063 | 0.7685 | 0.7869 |
+| Naive Bayes | 0.8208 | 0.8328 | 0.8020 | 0.8171 |
+| Tuned Logistic Regression (TF-IDF + bigrams) | 0.8174 | 0.8203 | 0.8121 | 0.8162 |
+
+5-fold cross-validation F1: Logistic Regression 0.815, Linear SVM 0.801, Naive Bayes 0.818.
+
+## Key findings
+
+- All models score about **79–82%**. Naive Bayes and the tuned Logistic Regression are effectively tied.
+- The **SVM overfits most** (98.3% training vs 79.2% test accuracy).
+- The learned weights are sensible: `great`, `love`, `delicious` push positive; `bad`, `worst`, `not` push negative. Keeping `not` as a feature mattered.
+- **Limitations:** Bag of Words ignores word order, so it fails on double negation ("not bad"), sarcasm ("Oh great, another delay") and mixed opinions. This is the gap embeddings, Transformers and LLMs fill.
+
+## How to run
+
+```powershell
+# from the project root
+uv pip install numpy pandas matplotlib seaborn scikit-learn ipykernel
+```
+
+Open `notebook/sentiment_analysis.ipynb` and run all cells. The first cells download the dataset automatically if `sentiment.zip` is missing. If the download fails, save the zip from the UCI link next to the notebook as `sentiment.zip` and re-run.
+
+## Project structure
+
+```
+Lab-01-Machine-Learning/
+├── notebook/
+│   ├── sentiment_analysis.ipynb   # full lab: code + explanations
+│   └── data/                      # extracted dataset (git-ignored)
+├── screenshots/                   # result charts
+└── README.md
+```
+
+## Tech stack
+
+Python, Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn
