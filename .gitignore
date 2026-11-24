@@ -1,11 +1,27 @@
-
+# Virtual environments
+.venv/
 nlp_rag/rag_env/
-nlp_rag/chroma_db/
 
+# Databases and vector stores
+nlp_rag/chroma_db/
 nlp_rag/student_memory.db
 
+# IDE settings
 .idea/
+
+# Dataset downloads (can be re-downloaded)
 *.zip
 sentiment_labelled_sentences/
+sentiment_data/
+
+# Python and Jupyter cache
 __pycache__/
-.venv/
+*.pyc
+.ipynb_checkpoints/
+
+# Model files
+*.pt
+
+# OS files
+.DS_Store
+Thumbs.db
