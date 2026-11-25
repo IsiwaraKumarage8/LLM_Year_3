@@ -1,2 +1,5 @@
 
 Lab-05-RAG-Pipeline/docs/*.pdf
+
+Lab-05-RAG-Pipeline/docs/*.pdf
+**/chroma_db/
