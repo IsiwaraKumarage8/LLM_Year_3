@@ -26,6 +26,8 @@ def init_memory_db():
     cursor.execute("""
         DELETE FROM memories
         WHERE UPPER(TRIM(fact, '. ')) = 'NONE'
+           OR LOWER(fact) LIKE '%no personal facts%'
+           OR LOWER(fact) LIKE '%no new information%'
            OR fact LIKE '%don''t see any message%'
     """)
     conn.commit()
@@ -125,13 +127,14 @@ llm_with_tools = llm.bind_tools(tools)
 def extract_and_store_facts(user_text: str):
     """Uses the LLM to extract personal facts to persist in SQLite."""
     extraction_prompt = (
-        "Extract any personal facts about the user (such as their name, degree, interests, "
-        "or preferences) from the message below as a single short sentence. "
-        "If there are no personal facts to remember, reply strictly with NONE.\n\n"
+        "Read the user message and extract any personal facts (name, degree, university, or interests) "
+        "in one short sentence (e.g., 'The user's name is Isiwara and they study Data Science'). "
+        "If the message is only a question or has no personal facts, reply with ONLY the word: NONE\n\n"
         f"Message: {user_text}"
     )
     res = llm.invoke([HumanMessage(content=extraction_prompt)]).content.strip().rstrip(".")
-    if res and "NONE" not in res.upper():
+    blocked = ("NONE", "NO PERSONAL FACTS", "NO NEW INFORMATION", "NO FACTS")
+    if res and not any(b in res.upper() for b in blocked):
         print("[NEW MEMORIES DETECTED]")
         save_memory_fact(res)
     else:
